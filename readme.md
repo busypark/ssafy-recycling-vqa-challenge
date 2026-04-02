@@ -1,27 +1,34 @@
-# format: VLM 트랙 학습용 JSONL 생성
+# preprocess: VLM 이미지 768px 리사이징 및 JSONL 경로 갱신
 
-**날짜** 2026-04-02 (목) 14:41:09
+**날짜** 2026-04-02 (목) 15:53:37
 **브랜치** `main`
-**타입** `format`
+**타입** `preprocess`
 
-> 관련 파일: `[2-2] Prompt Formatting - JSONL.ipynb`
+> 관련 파일: `[2-3] Resize images.ipynb`
 
 ## 가설
 
-질문·선택지·정답을 Qwen-VL 표준 프롬프트 포맷으로 변환하면 SFT 파인튜닝에 바로 투입할 수 있다
+이미지를 768px로 줄이면 VRAM 사용량을 낮추면서도 Qwen-VL 성능 저하 없이 학습시킬 수 있다
 
 ## 설정
 
-- YOLO 트랙 제외한 VLM 트랙만 필터링
-- train 정답: 단일 answer 컬럼 사용
-- dev 정답: answer1~answer5 다수결 (Counter 최빈값)
-- 프롬프트 포맷: `<image>경로\n질문: ...\na. ...\nb. ...\nc. ...\nd. ...\n정답:`
+- MAX_SIZE=768
+- Pillow thumbnail (비율 유지)
+- LANCZOS 리샘플링
+- JPEG quality=85
+- VLM 트랙 이미지만 대상
+- 리사이징 후 JSONL 내 이미지 경로를 `resized_images/`로 일괄 치환
 
 ## 결과
 
-- train_vlm.jsonl: 3,326건
-- dev_vlm.jsonl: 1,269건
+| 분할 | 저장 장수 |
+|---|---|
+| resized_images/train | 3,326장 |
+| resized_images/dev | 1,269장 |
+| resized_images/test | 3,365장 |
+
+- train_vlm_resized.jsonl, dev_vlm_resized.jsonl 생성
 
 ## 판단
 
-VLM 학습 데이터 완성. 이미지 경로 업데이트를 위해 [2-3] 리사이징 후 JSONL 재생성 필요
+VRAM 효율화 전처리 완료. 이후 Qwen2-VL 파인튜닝은 resized 버전 사용
